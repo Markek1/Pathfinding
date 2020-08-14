@@ -1,4 +1,6 @@
-import math
+import math, random
+
+import heap
 
 class Node:
     """g_cost - distance to starting node
@@ -24,6 +26,13 @@ class Node:
         self.walkable = True
         self.color = (255, 255, 255)
 
+    def compare_to(self, node):
+        dif_f_cost = self.f_cost - node.f_cost
+        if dif_f_cost == 0:
+            return -(self.h_cost - node.h_cost)
+        else:
+            return -dif_f_cost
+
     def __repr__(self):
         return f'{self.pos}'
 
@@ -38,7 +47,7 @@ class Grid:
         self.dims = dimensions
         self.grid = [[Node((y, x)) for x in range(dimensions[1])] for y in range(dimensions[0])]
 
-        self.open = {}
+        self.open = heap.Heap()
         self.closed = set()
 
         self.start_pos = start_pos
@@ -57,13 +66,6 @@ class Grid:
         to_close = self.grid[y][x]
         self.closed.add(to_close)
         to_close.color = (255, 0, 0)
-        for key, value in self.open.items():
-            if to_close in value:
-                if len(value) == 1:
-                    self.open.pop(key)
-                else:
-                    self.open[key].remove(to_close)
-                break
         self._find_all_open(closed_pos)
 
     def _find_all_open(self, closed_pos):
@@ -84,26 +86,15 @@ class Grid:
                     to_open.previous = self.grid[c_y][c_x]
                     if (y, x) != self.end_pos:
                         to_open.color = (0, 255, 0)
-                    if to_open.f_cost in self.open:
-                        if to_open not in self.open[to_open.f_cost]:
-                            self.open[to_open.f_cost].append(to_open)
-                    else:
-                        self.open[to_open.f_cost] = [to_open]
+                    self.open.add(to_open)
 
     def next(self):
-        min_dist = self.open[min(self.open.keys())]
+        min_dist = self.open.remove_first()
 
-        min_g_cost = min_dist[0].g_cost
-        final_i = 0
-        for i, node in enumerate(min_dist):
-            if node.g_cost < min_g_cost:
-                min_g_cost = node.g_cost
-                final_i = i
-
-        if min_dist[final_i].pos == self.end_pos:
-            self.finish(min_dist[final_i])
+        if min_dist.pos == self.end_pos:
+            self.finish(min_dist)
         else:
-            self._close((min_dist[final_i].pos))
+            self._close(min_dist.pos)
 
     def finish(self, last):
         self.finished = True
@@ -126,4 +117,17 @@ class Grid:
 
 
 if __name__ == '__main__':
-    pass
+    h = heap.Heap()
+    nodes = []
+    for j in range(10):
+        node = Node((j, 0))
+        node.g_cost = random.randint(1, 20)
+        node.h_cost = random.randint(1, 20)
+        node.calculate_f_cost()
+
+        nodes.append(node)
+    for node in nodes:
+        h.add(node)
+    for x in range(len(h.heap)):
+        node = h.remove_first()
+        print(x, node.f_cost, node.h_cost)
