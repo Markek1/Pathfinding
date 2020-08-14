@@ -1,4 +1,4 @@
-import heapq
+import math
 
 class Node:
     """g_cost - distance to starting node
@@ -7,9 +7,9 @@ class Node:
     """
     def __init__(self, pos):
         self.pos = pos
-        self.g_cost = None
-        self.h_cost = None
-        self.f_cost = None
+        self.g_cost = math.inf
+        self.h_cost = math.inf
+        self.f_cost = math.inf
         self.previous = None
         self.make_walkable()
 
@@ -67,20 +67,6 @@ class Grid:
         self._find_all_open(closed_pos)
 
     def _find_all_open(self, closed_pos):
-
-        def _add_to_open():
-            to_open.g_cost = self.grid[c_y][c_x].g_cost + self.distance((y, x), (c_y, c_x))
-            to_open.h_cost = self.coefficient * self.distance((y, x), self.end_pos)
-            to_open.calculate_f_cost()
-            to_open.previous = self.grid[c_y][c_x]
-            if (y, x) != self.end_pos:
-                to_open.color = (0, 255, 0)
-            if to_open.f_cost in self.open:
-                if to_open not in self.open[to_open.f_cost]:
-                    self.open[to_open.f_cost].append(to_open)
-            else:
-                self.open[to_open.f_cost] = [to_open]
-
         c_y, c_x = closed_pos[0], closed_pos[1]
         s_y, s_x = self.start_pos[0], self.start_pos[1]
         e_y, e_x = self.end_pos[0], self.end_pos[1]
@@ -89,13 +75,20 @@ class Grid:
                 to_open = self.grid[y][x]
                 if (y == c_y and x == c_x) or to_open in self.closed or not to_open.walkable:
                     continue
-                elif to_open.f_cost:
-                    if to_open.f_cost <= (self.grid[c_y][c_x].g_cost + self.distance((y, x), (s_y, s_x)) + self.coefficient * self.distance((y, x), (e_y, e_x))):
+                elif to_open.f_cost <= (self.grid[c_y][c_x].g_cost + self.distance((y, x), (s_y, s_x)) + self.coefficient * self.distance((y, x), (e_y, e_x))):
                         continue
-                    else:
-                        _add_to_open()
                 else:
-                    _add_to_open()
+                    to_open.g_cost = self.grid[c_y][c_x].g_cost + self.distance((y, x), (c_y, c_x))
+                    to_open.h_cost = self.coefficient * self.distance((y, x), self.end_pos)
+                    to_open.calculate_f_cost()
+                    to_open.previous = self.grid[c_y][c_x]
+                    if (y, x) != self.end_pos:
+                        to_open.color = (0, 255, 0)
+                    if to_open.f_cost in self.open:
+                        if to_open not in self.open[to_open.f_cost]:
+                            self.open[to_open.f_cost].append(to_open)
+                    else:
+                        self.open[to_open.f_cost] = [to_open]
 
     def next(self):
         min_dist = self.open[min(self.open.keys())]

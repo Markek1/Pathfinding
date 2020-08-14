@@ -71,11 +71,11 @@ def main():
         draw_grid()
 
         if not g.finished:
-            # start_time = time.time()
-            # while not g.finished:
-            g.next()
-            # else:
-            #     print(time.time() - start_time)
+            start_time = time.time()
+            while not g.finished:
+                g.next()
+            else:
+                print(time.time() - start_time)
 
         pygame.display.update()
 
