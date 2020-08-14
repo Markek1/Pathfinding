@@ -30,7 +30,7 @@ class Node:
 
 class Grid:
 
-    def __init__(self, dimensions, start_pos, end_pos):
+    def __init__(self, dimensions):
         self.finished = False
 
         self.coefficient = 1
@@ -41,15 +41,9 @@ class Grid:
         self.open = {}
         self.closed = set()
 
-        self.start_pos = start_pos
-        self.grid[start_pos[0]][start_pos[1]].g_cost = 0
-
-        self.end_pos = end_pos
-        self.grid[end_pos[0]][end_pos[1]].color = (0, 0, 255)
-
-        self._close((start_pos[0], start_pos[1]))
-
-        self.grid[start_pos[0]][start_pos[1]].color = (0, 0, 255)
+    def initialize(self):
+        self.grid[self.start_pos[0]][self.start_pos[1]].g_cost = 0
+        self._close((self.start_pos[0], self.start_pos[1]))
 
 
     def _close(self, closed_pos):
