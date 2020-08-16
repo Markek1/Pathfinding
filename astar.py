@@ -31,26 +31,25 @@ class Node:
 class Grid:
 
     def __init__(self, dimensions):
-        self.finished = False
-
-        self.coefficient = 1
-
         self.dims = dimensions
-        self.grid = [[Node((y, x)) for x in range(dimensions[1])] for y in range(dimensions[0])]
-
-        self.open = {}
-        self.closed = set()
+        self.new()
 
     def initialize(self):
         self.grid[self.start_pos[0]][self.start_pos[1]].g_cost = 0
         self._close((self.start_pos[0], self.start_pos[1]))
 
+    def new(self):
+        self.finished = False
+        self.open = {}
+        self.closed = set()
+        self.grid = [[Node((y, x)) for x in range(self.dims[1])] for y in range(self.dims[0])]
 
     def _close(self, closed_pos):
         y, x = closed_pos[0], closed_pos[1]
         to_close = self.grid[y][x]
         self.closed.add(to_close)
-        to_close.color = (255, 0, 0)
+        if to_close.pos != self.start_pos:
+            to_close.color = (255, 0, 0)
         for key, value in self.open.items():
             if to_close in value:
                 if len(value) == 1:
