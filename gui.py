@@ -4,7 +4,7 @@ from pygame.locals import QUIT, KEYDOWN, MOUSEBUTTONDOWN
 import astar
 
 pygame.init()
-WIDTH, HEIGHT = 500, 500
+WIDTH, HEIGHT = 700, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('A* pathfinder')
 clock = pygame.time.Clock()
@@ -12,18 +12,22 @@ FPS = 250
 
 GRID_SIZES = (HEIGHT, WIDTH // 1.2)
 GRID_COORS = (0, 0)
-GRID_DIMENSIONS = (50, 50)
+GRID_DIMENSIONS = (40, 40)
 g = astar.Grid(GRID_DIMENSIONS)
 g.coefficient = 1
 
 NODE_WIDTH, NODE_HEIGHT = GRID_SIZES[1] // GRID_DIMENSIONS[1], GRID_SIZES[0] // GRID_DIMENSIONS[0]
 graphical_grid = [[None for _ in range(GRID_DIMENSIONS[1])] for _ in range(GRID_DIMENSIONS[0])]
 
+# used when a Node method needs to not be done on any node in the grid
+dumping_node = astar.Node((GRID_DIMENSIONS[1] + 1, GRID_DIMENSIONS[0] + 1))
+
 def assign_node_coors():
     """Assigns coordinates to nodes in grid"""
     for j in range(GRID_DIMENSIONS[0]):
         for i in range(GRID_DIMENSIONS[1]):
             graphical_grid[j][i] = pygame.Rect(i * NODE_WIDTH, j * NODE_HEIGHT, NODE_WIDTH - 1, NODE_HEIGHT - 1)
+
 
 def draw_grid():
     for j in range(GRID_DIMENSIONS[0]):
@@ -53,7 +57,15 @@ def find_node():
                 cur_x -= mx
                 i -= 1
                 break
-        return g.grid[j][i]
+
+        if (j, i) == g.start_pos or (j, i) == g.end_pos:
+            return dumping_node
+        else:
+            return g.grid[j][i]
+
+    else:
+        return dumping_node
+
 
 assign_node_coors()
 
@@ -91,6 +103,7 @@ def main_paused():
                 if event.type == QUIT:
                     sys.exit()
                 if event.type == KEYDOWN:
+                    g.initialize()
                     main()
                 if pygame.mouse.get_pressed()[0]:
                     find_node().make_unwalkable()
@@ -111,11 +124,12 @@ def main_get_start_end():
         while True:
             clock.tick(200)
 
+
             events = pygame.event.get()
             for event in events:
                 if event.type == QUIT:
                     sys.exit()
-                if pygame.mouse.get_pressed()[0]:
+                if event.type == MOUSEBUTTONDOWN:
                     try:
                         node = find_node()
                         if g.start_pos == ():
@@ -128,8 +142,8 @@ def main_get_start_end():
                         pass
 
             if g.start_pos != () and g.end_pos != ():
-                g.initialize()
                 main_paused()
+
 
             screen.fill((0, 0, 0))
             draw_grid()
